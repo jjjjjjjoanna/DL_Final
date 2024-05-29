@@ -30,9 +30,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='params',
                     help='Path to the config file.')
 parser.add_argument('--dataset_path', type=str,
-                    default='/content/data/ffhq/ffhq', help='dataset path')
+                    default='/content/data/UTK', help='dataset path')
 parser.add_argument('--label_file_path', type=str,
-                    default='/content/data/ffhq.npy', help='label file path')
+                    default='/content/data/UTK/age_label.npy', help='label file path')
 parser.add_argument('--vgg_model_path', type=str,
                     default='/content/models/caffenet.pt', help='pretrained age classifier')
 parser.add_argument('--log_path', type=str,
