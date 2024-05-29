@@ -30,13 +30,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='params',
                     help='Path to the config file.')
 parser.add_argument('--dataset_path', type=str,
-                    default='/content/HRFAE/data/ffhq/ffhq', help='dataset path')
+                    default='/content/data/ffhq/ffhq', help='dataset path')
 parser.add_argument('--label_file_path', type=str,
-                    default='/content/HRFAE/data/ffhq.npy', help='label file path')
+                    default='/content/data/ffhq.npy', help='label file path')
 parser.add_argument('--vgg_model_path', type=str,
-                    default='/content/HRFAE/models/caffenet.pt', help='pretrained age classifier')
+                    default='/content/models/caffenet.pt', help='pretrained age classifier')
 parser.add_argument('--log_path', type=str,
-                    default='/content/HRFAE/logs/', help='log file path')
+                    default='/content/logs/', help='log file path')
 parser.add_argument('--multigpu', type=bool, default=False,
                     help='use multiple gpus')
 parser.add_argument('--resume', type=bool, default=False,
@@ -57,7 +57,7 @@ logger = SummaryWriter(log_dir)
 
 
 config = yaml.safe_load(
-    open('/content/HRFAE/configs/' + opts.config + '.yaml', 'r'))
+    open('/content/configs/' + opts.config + '.yaml', 'r'))
 epochs = config['epochs']
 age_min = config['age_min']
 age_max = config['age_max']
