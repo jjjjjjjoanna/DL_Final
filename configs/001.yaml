@@ -16,7 +16,7 @@ step_size: 10
 gamma: 0.1                                 
 # Tensorboard log options
 image_save_iter: 3000         
-image_log_iter: 1000         
+image_log_iter: 500         
 log_iter: 5
 # Loss weight
 w:
