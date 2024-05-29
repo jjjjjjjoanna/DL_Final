@@ -8,7 +8,6 @@ import torch.nn.functional as F
 import torch.utils.data as data
 import yaml
 from PIL import Image
-from tensorboard_logger import Logger
 from tensorboardX import SummaryWriter
 # from torchvision import transforms, utils
 from torchvision.transforms import v2
