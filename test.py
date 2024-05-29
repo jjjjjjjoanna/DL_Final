@@ -28,15 +28,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='params',
                     help='path to the config file.')
 parser.add_argument('--vgg_model_path', type=str,
-                    default='/content/HRFAE/models/caffenet.pt', help='pretrained age classifier')
+                    default='/content/models/caffenet.pt', help='pretrained age classifier')
 parser.add_argument('--log_path', type=str,
-                    default='/content/HRFAE/logs/', help='log file path')
+                    default='/content/logs/', help='log file path')
 parser.add_argument('--checkpoint', type=str, default='',
                     help='checkpoint file path')
 parser.add_argument('--img_path', type=str,
-                    default='/content/HRFAE/test/input/', help='test image path')
+                    default='/content/test/input/', help='test image path')
 parser.add_argument('--out_path', type=str,
-                    default='/content/HRFAE/test/output/', help='test output path')
+                    default='/content/test/output/', help='test output path')
 parser.add_argument('--target_age', type=int, default=65,
                     help='Age transform target, interger value between 20 and 70')
 opts = parser.parse_args()
@@ -45,8 +45,8 @@ log_dir = os.path.join(opts.log_path, opts.config) + '/'
 if not os.path.exists(opts.out_path):
     os.makedirs(opts.out_path)
 
-config = yaml.load(
-    open('/content/HRFAE/configs/' + opts.config + '.yaml', 'r'))
+config = yaml.safe_load(
+    open('/content/configs/' + opts.config + '.yaml', 'r'))
 img_size = (config['input_w'], config['input_h'])
 
 # Initialize trainer
