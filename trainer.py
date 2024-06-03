@@ -175,7 +175,7 @@ class Trainer(nn.Module):
         x_a_recon, x_a_modif, age_a_modif = self.gen_encode(x_a, age_a)
 
         # 將圖像轉換為 NCHW 格式
-        x_a = x_a.unsqueeze(0)  # 添加批次維度
+        x_a = x_a.unsqueeze(0)
         x_a_recon = x_a_recon.unsqueeze(0)
         x_a_modif = x_a_modif.unsqueeze(0)
 
@@ -202,7 +202,7 @@ class Trainer(nn.Module):
     def save_image(self, x_a, age_a, log_dir, n_epoch, n_iter):
         x_a_recon, x_a_modif, age_a_modif = self.gen_encode(x_a, age_a)
         # 將圖像轉換為 NCHW 格式
-        x_a = x_a.unsqueeze(0)  # 添加批次維度
+        x_a = x_a.unsqueeze(0)
         x_a_recon = x_a_recon.unsqueeze(0)
         x_a_modif = x_a_modif.unsqueeze(0)
 
