@@ -152,8 +152,8 @@ class ResNet50(nn.Module):
     def __init__(self, num_classes=1000):
         super(ResNet50, self).__init__()
         resnet = models.resnet50(pretrained=False)
-        self.features = nn.Sequential(*list(resnet.children())[:-1])  # Remove the last fc layer
-        self.classifier = nn.Linear(resnet.fc.in_features, num_classes)  # Add your own classifier layer
+        self.features = nn.Sequential(*list(resnet.children())[:-1]) 
+        self.classifier = nn.Linear(resnet.fc.in_features, num_classes) 
 
     def forward(self, x):
         x = self.features(x)

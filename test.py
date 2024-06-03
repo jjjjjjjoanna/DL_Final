@@ -41,6 +41,7 @@ parser.add_argument('--out_path', type=str,
                     default='/content/test/output/', help='test output path')
 parser.add_argument('--target_age', type=int, default=65,
                     help='Age transform target, interger value between 20 and 70')
+parser.add_argument('--resnet50', type=str, default='/content/resnet50.pt', help='resnet50 model path')
 opts = parser.parse_args()
 
 log_dir = os.path.join(opts.log_path, opts.config) + '/'

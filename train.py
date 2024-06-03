@@ -39,13 +39,6 @@ parser.add_argument('--checkpoint', type=str, default='', help='checkpoint file 
 parser.add_argument('--resnet50', type=str, default='/content/resnet50.pt', help='resnet50 model path')
 opts = parser.parse_args()
 
-# Download the VGG13 model if it does not exist
-# if not os.path.exists(opts.vgg_model_path):
-#     url = 'https://download.pytorch.org/models/vgg13-c768596a.pth'
-#     os.makedirs(os.path.dirname(opts.vgg_model_path), exist_ok=True)
-#     urllib.request.urlretrieve(url, opts.vgg_model_path)
-#     print(f"Model downloaded and saved to {opts.vgg_model_path}")
-
 log_dir = os.path.join(opts.log_path, opts.config) + '/'
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
