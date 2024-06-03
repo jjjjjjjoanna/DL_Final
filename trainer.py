@@ -172,6 +172,12 @@ class Trainer(nn.Module):
 
     def log_image(self, x_a, age_a, logger, n_epoch, n_iter):
         x_a_recon, x_a_modif, age_a_modif = self.gen_encode(x_a, age_a)
+
+        # 將圖像轉換為 NCHW 格式
+        x_a = x_a.unsqueeze(0)  # 添加批次維度
+        x_a_recon = x_a_recon.unsqueeze(0)
+        x_a_modif = x_a_modif.unsqueeze(0)
+
         logger.add_images('epoch'+str(n_epoch+1)+'/iter' +
                           str(n_iter+1)+'/content', clip_img(x_a), n_iter + 1)
         logger.add_images('epoch'+str(n_epoch+1)+'/iter'+str(n_iter+1)+'/content_recon' +
@@ -194,6 +200,11 @@ class Trainer(nn.Module):
 
     def save_image(self, x_a, age_a, log_dir, n_epoch, n_iter):
         x_a_recon, x_a_modif, age_a_modif = self.gen_encode(x_a, age_a)
+        # 將圖像轉換為 NCHW 格式
+        x_a = x_a.unsqueeze(0)  # 添加批次維度
+        x_a_recon = x_a_recon.unsqueeze(0)
+        x_a_modif = x_a_modif.unsqueeze(0)
+
         save_image(clip_img(x_a), log_dir + 'epoch' +
                    str(n_epoch+1) + 'iter' + str(n_iter+1) + '_content.png')
         save_image(clip_img(x_a_recon), log_dir + 'epoch' + str(n_epoch+1) + 'iter' +

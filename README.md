@@ -52,7 +52,12 @@ conda env create -f env.yml
     
     You can modify the training options of the config file in `configs` directory.
     ```
-    python train.py --config 001 
+    python /content/train.py --config 001 --dataset_path /content/data/UTK --label_file_path /content/data/UTK/age_label.npy --vgg_model_path /content/models/vgg13-c768596a.pth
+    ```
+4. Testing
+    ```
+    bash /content/logs/001/download.sh
+    python /content/test.py --config 001 --target_age 65
     ```
 
 ## Google Colab
