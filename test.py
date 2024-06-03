@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='params',
                     help='path to the config file.')
 parser.add_argument('--vgg_model_path', type=str,
-                    default='/content/models/vgg16-397923af.pth', help='pretrained age classifier')
+                    default='/content/models/vgg16_bn-6c64b313.pth', help='pretrained age classifier')
 parser.add_argument('--log_path', type=str,
                     default='/content/logs/', help='log file path')
 parser.add_argument('--checkpoint', type=str, default='',

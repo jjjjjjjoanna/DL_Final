@@ -31,17 +31,17 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='params', help='Path to the config file.')
 parser.add_argument('--dataset_path', type=str, default='/content/data/UTK', help='dataset path')
 parser.add_argument('--label_file_path', type=str, default='/content/data/UTK/age_label.npy', help='label file path')
-parser.add_argument('--vgg_model_path', type=str, default='/content/models/vgg16-397923af.pth', help='pretrained age classifier')
+parser.add_argument('--vgg_model_path', type=str, default='/content/models/vgg16_bn-6c64b313.pth', help='pretrained age classifier')
 parser.add_argument('--log_path', type=str, default='/content/logs/', help='log file path')
 parser.add_argument('--multigpu', type=bool, default=False, help='use multiple gpus')
 parser.add_argument('--resume', type=bool, default=False, help='resume from checkpoint')
 parser.add_argument('--checkpoint', type=str, default='', help='checkpoint file path')
-parser.add_argument('--resnet50', type=str, default='/content/resnet50.pt', help='resnet50 model path')
+
 opts = parser.parse_args()
 
-Download the VGG13 model if it does not exist
+#Download the VGG13 model if it does not exist
 if not os.path.exists(opts.vgg_model_path):
-    url = 'https://download.pytorch.org/models/vgg16-397923af.pth'
+    url = 'https://download.pytorch.org/models/vgg16_bn-6c64b313.pth'
     os.makedirs(os.path.dirname(opts.vgg_model_path), exist_ok=True)
     urllib.request.urlretrieve(url, opts.vgg_model_path)
     print(f"Model downloaded and saved to {opts.vgg_model_path}")
@@ -67,7 +67,7 @@ loader_B = data.DataLoader(dataset_B, batch_size=batch_size, shuffle=True, num_w
 
 # Initialize trainer
 trainer = Trainer(config)
-trainer.initialize(opts.resnet50)
+trainer.initialize(opts.vgg_model_path)
 trainer.to(device)
 
 epoch_0 = 0
