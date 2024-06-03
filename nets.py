@@ -88,30 +88,43 @@ class Encoder(nn.Module):
         return out, out_3, out_2
 
 
+class AdaIN(nn.Module):
+    def __init__(self, style_dim, num_features):
+        super(AdaIN, self).__init__()
+        self.norm = nn.InstanceNorm2d(num_features, affine=False)
+        self.fc = nn.Linear(style_dim, num_features * 2)
+
+    def forward(self, x, style):
+        style = self.fc(style).view(style.size(0), -1, 1, 1)
+        gamma, beta = style.chunk(2, 1)
+        return gamma * self.norm(x) + beta
+
+
 class Decoder(nn.Module):
-    def __init__(self, output_size=3, activ='leakyrelu'):
+    def __init__(self, output_size=3, style_dim=128, activ='leakyrelu'):
         super(Decoder, self).__init__()
         self.conv_1 = nn.Sequential(
             nn.Upsample(scale_factor=2),
             Conv2d(256, 64, kernel_size=3, stride=1, activ=activ, sn=True)
         )
+        self.adain1 = AdaIN(style_dim, 64)
         self.conv_2 = nn.Sequential(
             nn.Upsample(scale_factor=2),
             Conv2d(128, 32, kernel_size=3, stride=1, activ=activ, sn=True)
         )
+        self.adain2 = AdaIN(style_dim, 32)
         self.conv_3 = nn.Sequential(
             nn.ReflectionPad2d(4),
             nn.Conv2d(32, output_size, kernel_size=9, stride=1)
         )
 
     def forward(self, x, age_vec, skip_1, skip_2):
-        b, c = age_vec.size()
-        age_vec = age_vec.view(b, c, 1, 1)
-        out = age_vec*x       
-        out = torch.cat((out, skip_1), 1)
+        out = torch.cat((x, skip_1), 1)
         out = self.conv_1(out)
+        out = self.adain1(out, age_vec)
         out = torch.cat((out, skip_2), 1)
         out = self.conv_2(out)
+        out = self.adain2(out, age_vec)
         out = self.conv_3(out)
         return out
 
