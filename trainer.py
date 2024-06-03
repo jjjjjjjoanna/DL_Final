@@ -206,6 +206,7 @@ class Trainer(nn.Module):
         logger.add_scalar('loss/recon', self.loss_recon.item(), n_iter + 1)
         logger.add_scalar('loss/class', self.loss_class.item(), n_iter + 1)
         logger.add_scalar('loss/adv', self.loss_adver.item(), n_iter + 1)
+        logger.add_scalar('loss/bmi', self.bmi_loss.item(), n_iter + 1)
         logger.add_scalar('loss/dis', self.loss_dis_gp.item(), n_iter + 1)
         logger.add_scalar('age_diff', self.age_diff.item(), n_iter + 1)
         logger.add_scalar('dis/realism_A_modif',
