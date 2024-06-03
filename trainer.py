@@ -25,7 +25,7 @@ class Trainer(nn.Module):
         self.dec = Decoder()
         self.mlp_style = Mod_Net()
         self.dis = Dis_PatchGAN()
-        self.classifier = ResNet50(num_classes=1000)
+        self.classifier = VGG()
         # Optimizers
         self.gen_params = list(self.enc.parameters(
         )) + list(self.dec.parameters()) + list(self.mlp_style.parameters())
@@ -44,11 +44,10 @@ class Trainer(nn.Module):
         self.dec.apply(init_weights)
         self.mlp_style.apply(init_weights)
         self.dis.apply(init_weights)
-        # vgg_state_dict = torch.load(vgg_dir)
-        # vgg_state_dict = {
-        #     k.replace('-', '_'): v for k, v in vgg_state_dict.items()}
-        # self.classifier.load_state_dict(vgg_state_dict, strict=False)
-        self.classifier.load_state_dict(torch.load('/content/resnet50.pt'))
+        vgg_state_dict = torch.load(vgg_dir)
+        vgg_state_dict = {
+            k.replace('-', '_'): v for k, v in vgg_state_dict.items()}
+        self.classifier.load_state_dict(vgg_state_dict, strict=False)
 
     def dataparallel(self):
         self.enc = nn.DataParallel(self.enc)
@@ -174,8 +173,7 @@ class Trainer(nn.Module):
     def log_image(self, x_a, age_a, logger, n_epoch, n_iter):
         x_a_recon, x_a_modif, age_a_modif = self.gen_encode(x_a, age_a)
 
-        # 將圖像轉換為 NCHW 格式
-        x_a = x_a.unsqueeze(0)  # 添加批次維度
+        x_a = x_a.unsqueeze(0)
         x_a_recon = x_a_recon.unsqueeze(0)
         x_a_modif = x_a_modif.unsqueeze(0)
 
@@ -201,8 +199,7 @@ class Trainer(nn.Module):
 
     def save_image(self, x_a, age_a, log_dir, n_epoch, n_iter):
         x_a_recon, x_a_modif, age_a_modif = self.gen_encode(x_a, age_a)
-        # 將圖像轉換為 NCHW 格式
-        x_a = x_a.unsqueeze(0)  # 添加批次維度
+        x_a = x_a.unsqueeze(0)
         x_a_recon = x_a_recon.unsqueeze(0)
         x_a_modif = x_a_modif.unsqueeze(0)
 
