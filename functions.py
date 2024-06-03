@@ -49,6 +49,13 @@ def reg_loss(img):
     return reg_loss
 
 
+# def bmi_loss(x_a, x_a_modif):
+#     model.eval()
+#     with torch.no_grad():
+#         pred = model(image_vit)
+#     return 0
+
+
 def vgg_transform(x):
     """Adapt image for vgg network, x: image of range(0,1) subtracting ImageNet mean"""
     r, g, b = torch.split(x, 1, 1)

@@ -11,12 +11,13 @@ import yaml
 from PIL import Image
 from tensorboardX import SummaryWriter
 from torchvision import transforms
+from torchvision.transforms import v2
+from tqdm import tqdm
 
 from datasets import *
 from functions import *
 from nets import *
 from trainer import *
-from torchvision.transforms import v2
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.deterministic = True
@@ -28,22 +29,48 @@ else:
     device = torch.device('cpu')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--config', type=str, default='params', help='Path to the config file.')
-parser.add_argument('--dataset_path', type=str, default='/content/data/UTK', help='dataset path')
-parser.add_argument('--label_file_path', type=str, default='/content/data/UTK/age_label.npy', help='label file path')
-parser.add_argument('--vgg_model_path', type=str, default='/content/models/vgg16-397923af.pth', help='pretrained age classifier')
-parser.add_argument('--log_path', type=str, default='/content/logs/', help='log file path')
-parser.add_argument('--multigpu', type=bool, default=False, help='use multiple gpus')
-parser.add_argument('--resume', type=bool, default=False, help='resume from checkpoint')
-parser.add_argument('--checkpoint', type=str, default='', help='checkpoint file path')
+parser.add_argument('--config', type=str, default='params',
+                    help='Path to the config file.')
+parser.add_argument('--dataset_path', type=str,
+                    default='/content/data/UTK', help='dataset path')
+parser.add_argument('--label_file_path', type=str,
+                    default='/content/data/UTK/age_label.npy', help='label file path')
+parser.add_argument('--vgg_model_path', type=str,
+                    default='/content/models/vgg16-397923af.pth', help='pretrained age classifier')
+parser.add_argument('--bmi_model_path', type=str,
+                    default='/content/models/aug_epoch_7.pt', help='pretrained bmi predictor')
+parser.add_argument('--log_path', type=str,
+                    default='/content/logs/', help='log file path')
+parser.add_argument('--multigpu', type=bool, default=False,
+                    help='use multiple gpus')
+parser.add_argument('--resume', type=bool, default=False,
+                    help='resume from checkpoint')
+parser.add_argument('--checkpoint', type=str, default='',
+                    help='checkpoint file path')
 opts = parser.parse_args()
 
-#Download the VGG16 model if it does not exist
+# Download the VGG16 model if it does not exist
 if not os.path.exists(opts.vgg_model_path):
     url = 'https://download.pytorch.org/models/vgg16-397923af.pth'
     os.makedirs(os.path.dirname(opts.vgg_model_path), exist_ok=True)
     urllib.request.urlretrieve(url, opts.vgg_model_path)
     print(f"Model downloaded and saved to {opts.vgg_model_path}")
+
+
+class TqdmUpTo(tqdm):
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b * bsize - self.n)
+
+
+if not os.path.exists("../models"):
+    os.makedirs("../models")
+    weight_dir = "../models/aug_epoch_7.pt"
+    url = "https://face-to-bmi-weights.s3.us-east.cloud-object-storage.appdomain.cloud/aug_epoch_7.pt"
+    print("dowloading weights...")
+    with TqdmUpTo(unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1]) as t:
+        urllib.request.urlretrieve(url, weight_dir, reporthook=t.update_to)
 
 log_dir = os.path.join(opts.log_path, opts.config) + '/'
 if not os.path.exists(log_dir):
@@ -59,14 +86,18 @@ batch_size = 4
 img_size = (512, 512)
 
 # Load dataset
-dataset_A = MyDataSet(age_min, age_max, opts.dataset_path, opts.label_file_path, output_size=img_size, training_set=True)
-dataset_B = MyDataSet(age_min, age_max, opts.dataset_path, opts.label_file_path, output_size=img_size, training_set=True)
-loader_A = data.DataLoader(dataset_A, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
-loader_B = data.DataLoader(dataset_B, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+dataset_A = MyDataSet(age_min, age_max, opts.dataset_path,
+                      opts.label_file_path, output_size=img_size, training_set=True)
+dataset_B = MyDataSet(age_min, age_max, opts.dataset_path,
+                      opts.label_file_path, output_size=img_size, training_set=True)
+loader_A = data.DataLoader(
+    dataset_A, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+loader_B = data.DataLoader(
+    dataset_B, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
 
 # Initialize trainer
 trainer = Trainer(config)
-trainer.initialize(opts.vgg_model_path)
+trainer.initialize(opts.vgg_model_path, opts.bmi_model_path)
 trainer.to(device)
 
 epoch_0 = 0
@@ -90,10 +121,14 @@ for n_epoch in range(epoch_0, epoch_0+epochs):
         # Load dataset at 1024 x 1024 resolution for the next 10 epochs
         batch_size = config['batch_size']
         img_size = (config['input_h'], config['input_w'])
-        dataset_A = MyDataSet(age_min, age_max, opts.dataset_path, opts.label_file_path, output_size=img_size, training_set=True, transform=transform)
-        dataset_B = MyDataSet(age_min, age_max, opts.dataset_path, opts.label_file_path, output_size=img_size, training_set=True, transform=transform)
-        loader_A = data.DataLoader(dataset_A, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
-        loader_B = data.DataLoader(dataset_B, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+        dataset_A = MyDataSet(age_min, age_max, opts.dataset_path, opts.label_file_path,
+                              output_size=img_size, training_set=True, transform=transform)
+        dataset_B = MyDataSet(age_min, age_max, opts.dataset_path, opts.label_file_path,
+                              output_size=img_size, training_set=True, transform=transform)
+        loader_A = data.DataLoader(
+            dataset_A, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
+        loader_B = data.DataLoader(
+            dataset_B, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=True)
 
     iter_B = iter(loader_B)
     for i, list_A in enumerate(loader_A):

@@ -3,13 +3,13 @@
 # This source code is made available under the license found in the
 # LICENSE.txt in the root directory of this source tree.
 
+from torchvision.models import ViT_H_14_Weights, vit_h_14
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import models
-
 from torch.nn.utils import spectral_norm
+from torchvision import models
 
 
 class Conv2d(nn.Module):
@@ -23,8 +23,9 @@ class Conv2d(nn.Module):
         else:
             self.padding = nn.ReflectionPad2d(pad)
         # Define conv layer
-        if conv=='conv':
-            self.conv = nn.Conv2d(input_size, output_size, kernel_size=kernel_size, stride=stride)
+        if conv == 'conv':
+            self.conv = nn.Conv2d(input_size, output_size,
+                                  kernel_size=kernel_size, stride=stride)
         # Define norm layer
         if norm == 'in':
             self.norm = nn.InstanceNorm2d(output_size, affine=True)
@@ -42,7 +43,7 @@ class Conv2d(nn.Module):
         # Use spectral norm
         if sn == True:
             self.conv = spectral_norm(self.conv)
-        
+
     def forward(self, x):
         if self.padding:
             out = self.padding(x)
@@ -60,9 +61,11 @@ class ResBlock(nn.Module):
     def __init__(self, input_size, kernel_size, stride, conv='conv', pad='mirror', norm='in', activ='relu', sn=False):
         super(ResBlock, self).__init__()
         self.block = nn.Sequential(
-                Conv2d(input_size, input_size, kernel_size=kernel_size, stride=stride, conv=conv, pad=pad, norm=norm, activ=activ, sn=sn),
-                Conv2d(input_size, input_size, kernel_size=kernel_size, stride=stride, conv=conv, pad=pad, norm=norm, activ=activ, sn=sn)
-                )
+            Conv2d(input_size, input_size, kernel_size=kernel_size,
+                   stride=stride, conv=conv, pad=pad, norm=norm, activ=activ, sn=sn),
+            Conv2d(input_size, input_size, kernel_size=kernel_size,
+                   stride=stride, conv=conv, pad=pad, norm=norm, activ=activ, sn=sn)
+        )
 
     def forward(self, x):
         return x + self.block(x)
@@ -71,9 +74,12 @@ class ResBlock(nn.Module):
 class Encoder(nn.Module):
     def __init__(self, input_size=3, activ='leakyrelu'):
         super(Encoder, self).__init__()
-        self.conv_1 = Conv2d(input_size, 32, kernel_size=9, stride=1, activ=activ, sn=True)
-        self.conv_2 = Conv2d(32, 64, kernel_size=3, stride=2, activ=activ, sn=True)
-        self.conv_3 = Conv2d(64, 128, kernel_size=3, stride=2, activ=activ, sn=True)
+        self.conv_1 = Conv2d(input_size, 32, kernel_size=9,
+                             stride=1, activ=activ, sn=True)
+        self.conv_2 = Conv2d(32, 64, kernel_size=3,
+                             stride=2, activ=activ, sn=True)
+        self.conv_3 = Conv2d(64, 128, kernel_size=3,
+                             stride=2, activ=activ, sn=True)
         self.res_block = nn.Sequential(
             ResBlock(128, kernel_size=3, stride=1, activ=activ, sn=True),
             ResBlock(128, kernel_size=3, stride=1, activ=activ, sn=True),
@@ -108,7 +114,7 @@ class Decoder(nn.Module):
     def forward(self, x, age_vec, skip_1, skip_2):
         b, c = age_vec.size()
         age_vec = age_vec.view(b, c, 1, 1)
-        out = age_vec*x       
+        out = age_vec*x
         out = torch.cat((out, skip_1), 1)
         out = self.conv_1(out)
         out = torch.cat((out, skip_2), 1)
@@ -124,9 +130,9 @@ class Mod_Net(nn.Module):
 
     def forward(self, x):
         b_s = x.size(0)
-        z = torch.zeros(b_s,101).type_as(x).float()
+        z = torch.zeros(b_s, 101).type_as(x).float()
         for i in range(b_s):
-            z[i, x[i]]=1
+            z[i, x[i]] = 1
         y = self.fc_mix(z)
         y = F.sigmoid(y)
         return y
@@ -136,12 +142,18 @@ class Dis_PatchGAN(nn.Module):
     def __init__(self, input_size=3):
         super(Dis_PatchGAN, self).__init__()
         self.conv = nn.Sequential(
-            Conv2d(input_size, 32, kernel_size=4, stride=2, norm='none', activ='leakyrelu', sn=True),
-            Conv2d(32, 64, kernel_size=4, stride=2, norm='batch', activ='leakyrelu', sn=True),
-            Conv2d(64, 128, kernel_size=4, stride=2, norm='batch', activ='leakyrelu', sn=True),
-            Conv2d(128, 256, kernel_size=4, stride=2, norm='batch', activ='leakyrelu', sn=True),
-            Conv2d(256, 512, kernel_size=4, stride=1, norm='batch', activ='leakyrelu', sn=True),
-            Conv2d(512, 1, kernel_size=4, stride=1, norm='none', activ='none', sn=True)
+            Conv2d(input_size, 32, kernel_size=4, stride=2,
+                   norm='none', activ='leakyrelu', sn=True),
+            Conv2d(32, 64, kernel_size=4, stride=2,
+                   norm='batch', activ='leakyrelu', sn=True),
+            Conv2d(64, 128, kernel_size=4, stride=2,
+                   norm='batch', activ='leakyrelu', sn=True),
+            Conv2d(128, 256, kernel_size=4, stride=2,
+                   norm='batch', activ='leakyrelu', sn=True),
+            Conv2d(256, 512, kernel_size=4, stride=1,
+                   norm='batch', activ='leakyrelu', sn=True),
+            Conv2d(512, 1, kernel_size=4, stride=1,
+                   norm='none', activ='none', sn=True)
         )
 
     def forward(self, x):
@@ -149,10 +161,47 @@ class Dis_PatchGAN(nn.Module):
         return out
 
 
+class BMIHead(nn.Module):
+    def __init__(self):
+        super(BMIHead, self).__init__()
+        self.linear1 = nn.Linear(1280, 640)
+        self.linear2 = nn.Linear(640, 320)
+        self.linear3 = nn.Linear(320, 160)
+        self.linear4 = nn.Linear(160, 80)
+        self.linear5 = nn.Linear(80, 1)
+        self.gelu = nn.GELU()
+        self.dropout = nn.Dropout(0.5)
+
+    def forward(self, x):
+        x = self.linear1(x)
+        x = self.gelu(x)
+        x = self.dropout(x)
+        x = self.linear2(x)
+        x = self.gelu(x)
+        x = self.linear3(x)
+        x = self.gelu(x)
+        x = self.linear4(x)
+        x = self.gelu(x)
+        x = self.linear5(x)
+        out = self.gelu(x)
+        return out
+
+
+def FaceToBMIVIT():
+    model = vit_h_14(weights='IMAGENET1K_SWAG_E2E_V1')
+    for param in model.parameters():
+        param.requires_grad = False
+
+    heads = BMIHead()
+    model.heads = heads
+
+    return model
+
+
 class VGG(nn.Module):
     def __init__(self, pool='max'):
         super(VGG, self).__init__()
-        #vgg modules
+        # vgg modules
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, padding=1)
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
         self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -181,7 +230,7 @@ class VGG(nn.Module):
             self.pool3 = nn.AvgPool2d(kernel_size=2, stride=2)
             self.pool4 = nn.AvgPool2d(kernel_size=2, stride=2)
             self.pool5 = nn.AvgPool2d(kernel_size=2, stride=2)
-            
+
     def forward(self, x):
         out = {}
         out['r11'] = F.relu(self.conv1_1(x))
@@ -202,7 +251,7 @@ class VGG(nn.Module):
         out['r52'] = F.relu(self.conv5_2(out['r51']))
         out['r53'] = F.relu(self.conv5_3(out['r52']))
         out['p5'] = self.pool5(out['r53'])
-        out['p5'] = out['p5'].view(out['p5'].size(0),-1)
+        out['p5'] = out['p5'].view(out['p5'].size(0), -1)
         out['fc6'] = F.relu(self.fc6(out['p5']))
         out['fc7'] = F.relu(self.fc7(out['fc6']))
         out['fc8'] = self.fc8_101(out['fc7'])
