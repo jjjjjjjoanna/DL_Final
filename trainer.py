@@ -103,11 +103,11 @@ class Trainer(nn.Module):
         x_a_vit = torch.cat(x_a_vit_list, dim=0).to(self.device)
         x_a_modif_vit = torch.cat(x_a_modif_vit_list, dim=0).to(self.device)
 
-        with torch.no_grad():
-            org_pred = self.bmi_vit(x_a_vit)
-            print("Original Predictions:", org_pred)
-            modif_pred = self.bmi_vit(x_a_modif_vit)
-            print("Modified Predictions:", modif_pred)
+        # with torch.no_grad():
+        org_pred = self.bmi_vit(x_a_vit)
+        print("Original Predictions:", org_pred)
+        modif_pred = self.bmi_vit(x_a_modif_vit)
+        print("Modified Predictions:", modif_pred)
 
         # Calculate BMI loss using MSE
         return nn.MSELoss(reduction='none')(modif_pred, org_pred)
