@@ -88,29 +88,22 @@ class Trainer(nn.Module):
 
     def BMI_loss(self, x_a, x_a_modif):
         self.bmi_vit.eval()
-        mse_loss = nn.MSELoss()
+        with torch.no_grad():
+            x_a_vit_list = [self.vit_transforms(
+                img).unsqueeze(0) for img in x_a]
+            x_a_modif_vit_list = [self.vit_transforms(
+                img).unsqueeze(0) for img in x_a_modif]
 
-        # # Print shapes for debugging
-        # print(x_a.shape)        # Expected shape: [4, 3, 512, 512]
-        # print(x_a_modif.shape)  # Expected shape: [4, 3, 512, 512]
+            # Concatenate the lists into batch tensors
+            x_a_vit = torch.cat(x_a_vit_list, dim=0).to(self.device)
+            x_a_modif_vit = torch.cat(
+                x_a_modif_vit_list, dim=0).to(self.device)
+            org_pred = self.bmi_vit(x_a_vit)
+            print("Original Predictions:", org_pred)
+            modif_pred = self.bmi_vit(x_a_modif_vit)
+            print("Modified Predictions:", modif_pred)
 
-        # Apply transformations to each image in the lists
-        x_a_vit_list = [self.vit_transforms(img).unsqueeze(0) for img in x_a]
-        x_a_modif_vit_list = [self.vit_transforms(
-            img).unsqueeze(0) for img in x_a_modif]
-
-        # Concatenate the lists into batch tensors
-        x_a_vit = torch.cat(x_a_vit_list, dim=0).to(self.device)
-        x_a_modif_vit = torch.cat(x_a_modif_vit_list, dim=0).to(self.device)
-
-        # with torch.no_grad():
-        org_pred = self.bmi_vit(x_a_vit)
-        print("Original Predictions:", org_pred)
-        modif_pred = self.bmi_vit(x_a_modif_vit)
-        print("Modified Predictions:", modif_pred)
-
-        # Calculate BMI loss using MSE
-        return nn.MSELoss(reduction='none')(modif_pred, org_pred)
+            return nn.MSELoss()(modif_pred, org_pred)
 
     def grad_penalty_r1(self, net, x, coeff=10):
         """Calculate R1 regularization gradient penalty"""
