@@ -25,7 +25,7 @@ class Trainer(nn.Module):
         self.dec = Decoder()
         self.mlp_style = Mod_Net()
         self.dis = Dis_PatchGAN()
-        self.classifier = ResNet50(num_classes=1000)
+        self.classifier = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
         # Optimizers
         self.gen_params = list(self.enc.parameters(
         )) + list(self.dec.parameters()) + list(self.mlp_style.parameters())
@@ -128,7 +128,7 @@ class Trainer(nn.Module):
 
         # Feed into discriminator
         realism_a_modif = self.dis(x_a_modif)
-        predict_age_pb = self.classifier(vgg_transform(x_a_modif))['fc8']
+        predict_age_pb = self.classifier(vgg_transform(x_a_modif))
 
         # Get predicted age
         predict_age = get_predict_age(predict_age_pb)
