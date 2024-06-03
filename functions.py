@@ -11,7 +11,7 @@ from torch.autograd import grad
 
 def clip_img(x):
     """Clip image to range(0,1)"""
-    img_tmp = x.clone()
+    img_tmp = x.clone()[0]
     img_tmp[0] += 0.485
     img_tmp[1] += 0.457
     img_tmp[2] += 0.407

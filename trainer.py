@@ -9,6 +9,7 @@ from PIL import Image
 from torch.autograd import grad
 from torchvision import transforms, utils
 from torchvision.utils import save_image
+from torchvision import models
 
 from functions import *
 from nets import *
@@ -46,7 +47,7 @@ class Trainer(nn.Module):
         vgg_state_dict = torch.load(vgg_dir)
         vgg_state_dict = {
             k.replace('-', '_'): v for k, v in vgg_state_dict.items()}
-        self.classifier.load_state_dict(vgg_state_dict)
+        self.classifier.load_state_dict(vgg_state_dict, strict=False)
 
     def dataparallel(self):
         self.enc = nn.DataParallel(self.enc)

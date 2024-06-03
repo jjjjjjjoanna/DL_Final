@@ -1,5 +1,6 @@
 import argparse
 import os
+import urllib.request
 
 import numpy as np
 import torch
@@ -14,6 +15,7 @@ from datasets import *
 from functions import *
 from nets import *
 from trainer import *
+from torchvision.transforms import v2
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.deterministic = True
@@ -28,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='params',
                     help='path to the config file.')
 parser.add_argument('--vgg_model_path', type=str,
-                    default='/content/models/caffenet.pt', help='pretrained age classifier')
+                    default='/content/models/vgg13-c768596a.pth', help='pretrained age classifier')
 parser.add_argument('--log_path', type=str,
                     default='/content/logs/', help='log file path')
 parser.add_argument('--checkpoint', type=str, default='',

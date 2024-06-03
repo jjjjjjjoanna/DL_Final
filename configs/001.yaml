@@ -5,7 +5,7 @@ age_min: 20
 age_max: 70  
 # Training hyperparameters                 
 batch_size: 2                 
-epochs: 20    
+epochs: 10    
 # Optimizer parameters               
 lr: 0.0001         
 beta_1: 0.9                   
@@ -21,7 +21,7 @@ log_iter: 5
 # Loss weight
 w:
   recon: 10
-  class: 0.1
+  class: 0.3
   adver: 1
   dis: 1
   gp: 1

@@ -1,27 +1,24 @@
 import os
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as data
 from PIL import Image
-# from torchvision import transforms, utils
 from torchvision.transforms import v2
-
 
 class MyDataSet(data.Dataset):
     def __init__(self, age_min, age_max, image_dir, label_dir, output_size=(256, 256), training_set=True, obscure_age=True):
         self.image_dir = image_dir
-        self.transform = v2.Normalize(
-            mean=[0.48501961, 0.45795686, 0.40760392], std=[1, 1, 1])
-        self.resize = v2.Compose([
+        self.transform = v2.Compose([
             v2.Resize(output_size),
-            v2.ToTensor()
+            v2.ToImage(),
+            v2.ToDtype(torch.float32, scale=True),
+            v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Common normalization for pre-trained models
         ])
-        # load label file
+        # Load label file
         label = np.load(label_dir)
-        train_len = int(0.95*len(label))
+        train_len = int(0.95 * len(label))
         self.training_set = training_set
         self.obscure_age = obscure_age
         if training_set:
@@ -44,12 +41,9 @@ class MyDataSet(data.Dataset):
             age_val = int(self.label[index][1]) + np.random.randint(-1, 1)
         else:
             age_val = int(self.label[index][1])
-        age = torch.tensor(age_val)
+        age = torch.tensor(age_val, dtype=torch.long)
 
         image = Image.open(img_name).convert('RGB')
-        img = self.resize(image)
-        if img.size(0) == 1:
-            img = torch.cat((img, img, img), dim=0)
-        img = self.transform(img)
+        img = self.transform(image)
 
         return img, age
