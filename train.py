@@ -64,13 +64,12 @@ class TqdmUpTo(tqdm):
         self.update(b * bsize - self.n)
 
 
-if not os.path.exists("../models"):
-    os.makedirs("../models")
-    weight_dir = "../models/aug_epoch_7.pt"
+if not os.path.exists(opts.bmi_model_path):
     url = "https://face-to-bmi-weights.s3.us-east.cloud-object-storage.appdomain.cloud/aug_epoch_7.pt"
     print("dowloading weights...")
     with TqdmUpTo(unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1]) as t:
-        urllib.request.urlretrieve(url, weight_dir, reporthook=t.update_to)
+        urllib.request.urlretrieve(
+            url, opts.bmi_model_path, reporthook=t.update_to)
 
 log_dir = os.path.join(opts.log_path, opts.config) + '/'
 if not os.path.exists(log_dir):
