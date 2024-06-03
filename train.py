@@ -39,7 +39,7 @@ parser.add_argument('--checkpoint', type=str, default='', help='checkpoint file 
 parser.add_argument('--resnet50', type=str, default='/content/resnet50.pt', help='resnet50 model path')
 opts = parser.parse_args()
 
-Download the VGG13 model if it does not exist
+#Download the VGG13 model if it does not exist
 if not os.path.exists(opts.vgg_model_path):
     url = 'https://download.pytorch.org/models/vgg16-397923af.pth'
     os.makedirs(os.path.dirname(opts.vgg_model_path), exist_ok=True)
@@ -67,7 +67,7 @@ loader_B = data.DataLoader(dataset_B, batch_size=batch_size, shuffle=True, num_w
 
 # Initialize trainer
 trainer = Trainer(config)
-trainer.initialize(opts.resnet50)
+trainer.initialize(opts.vgg_model_path)
 trainer.to(device)
 
 epoch_0 = 0
