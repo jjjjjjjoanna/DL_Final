@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import models
 
 from torch.nn.utils import spectral_norm
 
@@ -146,6 +147,19 @@ class Dis_PatchGAN(nn.Module):
     def forward(self, x):
         out = self.conv(x)
         return out
+
+class ResNet50(nn.Module):
+    def __init__(self, num_classes=1000):
+        super(ResNet50, self).__init__()
+        resnet = models.resnet50(pretrained=False)
+        self.features = nn.Sequential(*list(resnet.children())[:-1])  # Remove the last fc layer
+        self.classifier = nn.Linear(resnet.fc.in_features, num_classes)  # Add your own classifier layer
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
 
 
 class VGG(nn.Module):

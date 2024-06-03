@@ -25,7 +25,7 @@ class Trainer(nn.Module):
         self.dec = Decoder()
         self.mlp_style = Mod_Net()
         self.dis = Dis_PatchGAN()
-        self.classifier = VGG()
+        self.classifier = ResNet50(num_classes=1000)
         # Optimizers
         self.gen_params = list(self.enc.parameters(
         )) + list(self.dec.parameters()) + list(self.mlp_style.parameters())
@@ -44,10 +44,11 @@ class Trainer(nn.Module):
         self.dec.apply(init_weights)
         self.mlp_style.apply(init_weights)
         self.dis.apply(init_weights)
-        vgg_state_dict = torch.load(vgg_dir)
-        vgg_state_dict = {
-            k.replace('-', '_'): v for k, v in vgg_state_dict.items()}
-        self.classifier.load_state_dict(vgg_state_dict, strict=False)
+        # vgg_state_dict = torch.load(vgg_dir)
+        # vgg_state_dict = {
+        #     k.replace('-', '_'): v for k, v in vgg_state_dict.items()}
+        # self.classifier.load_state_dict(vgg_state_dict, strict=False)
+        self.classifier.load_state_dict(torch.load('/content/resnet50.pt'))
 
     def dataparallel(self):
         self.enc = nn.DataParallel(self.enc)

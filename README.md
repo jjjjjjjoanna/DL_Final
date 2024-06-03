@@ -52,7 +52,7 @@ conda env create -f env.yml
     
     You can modify the training options of the config file in `configs` directory.
     ```
-    python /content/train.py --config 001 --dataset_path /content/data/UTK --label_file_path /content/data/UTK/age_label.npy --vgg_model_path /content/models/vgg13-c768596a.pth
+    !python /content/train.py --config 001 --dataset_path /content/data/UTK --label_file_path /content/data/UTK/age_label.npy --vgg_model_path /content/models/vgg16-397923af.pth
     ```
 4. Testing
     ```
