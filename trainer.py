@@ -8,6 +8,7 @@ import torch.utils.data as data
 from PIL import Image
 from torch.autograd import grad
 from torchvision import models, transforms, utils
+from torchvision.transforms import InterpolationMode, ToTensor
 from torchvision.utils import save_image
 
 from functions import *
@@ -18,7 +19,7 @@ class Trainer(nn.Module):
     def __init__(self, config):
         super(Trainer, self).__init__()
         # Load Hyperparameters
-        device = "cuda" if torch.cuda.is_available(
+        self.device = "cuda" if torch.cuda.is_available(
         ) else "mps" if torch.backends.mps.is_available() else "cpu"
         self.config = config
         # Networks
@@ -27,7 +28,7 @@ class Trainer(nn.Module):
         self.mlp_style = Mod_Net()
         self.dis = Dis_PatchGAN()
         self.classifier = VGG()
-        self.bmi_vit = FaceToBMIVIT().to(device)
+        self.bmi_vit = FaceToBMIVIT().to(self.device)
         # Optimizers
         self.gen_params = list(self.enc.parameters(
         )) + list(self.dec.parameters()) + list(self.mlp_style.parameters())
@@ -41,9 +42,16 @@ class Trainer(nn.Module):
         self.dis_scheduler = torch.optim.lr_scheduler.StepLR(
             self.dis_opt, step_size=config['step_size'], gamma=config['gamma'])
 
+        self.vit_transforms = transforms.Compose([
+            transforms.Resize([518], interpolation=InterpolationMode.BICUBIC),
+            transforms.CenterCrop([518]),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+
     def initialize(self, vgg_dir, bmi_dir):
-        device = "cuda" if torch.cuda.is_available(
-        ) else "mps" if torch.backends.mps.is_available() else "cpu"
         self.enc.apply(init_weights)
         self.dec.apply(init_weights)
         self.mlp_style.apply(init_weights)
@@ -52,7 +60,8 @@ class Trainer(nn.Module):
         vgg_state_dict = {
             k.replace('-', '_'): v for k, v in vgg_state_dict.items()}
         self.classifier.load_state_dict(vgg_state_dict, strict=False)
-        self.bmi_vit.load_state_dict(torch.load(bmi_dir, map_location=device))
+        self.bmi_vit.load_state_dict(
+            torch.load(bmi_dir, map_location=self.device))
 
     def dataparallel(self):
         self.enc = nn.DataParallel(self.enc)
@@ -79,10 +88,20 @@ class Trainer(nn.Module):
 
     def BMI_loss(self, x_a, x_a_modif):
         self.bmi_vit.eval()
+        # transforms for vit
+
+        x_a_vit = self.vit_transforms(x_a)
+        x_a_vit = x_a_vit.unsqueeze(0)
+        x_a_vit = x_a_vit.to(self.device)
+
+        x_a_modif_vit = self.vit_transforms(x_a_modif)
+        x_a_modif_vit = x_a_modif_vit.unsqueeze(0)
+        x_a_modif_vit = x_a_modif_vit.to(self.device)
+
         with torch.no_grad():
-            org_pred = self.bmi_vit(x_a).item()
-            modif_pred = self.bmi_vit(x_a_modif).item()
-        return abs(modif_pred - org_pred)
+            org_pred = self.bmi_vit(x_a_vit).item()
+            modif_pred = self.bmi_vit(x_a_modif_vit).item()
+        return (modif_pred - org_pred) ** 2
 
     def grad_penalty_r1(self, net, x, coeff=10):
         """Calculate R1 regularization gradient penalty"""
@@ -159,7 +178,7 @@ class Trainer(nn.Module):
         self.loss_tv = reg_loss(x_a_modif)
 
         # BMI loss
-        self.bmi_loss = self.bmi_loss(x_a, x_a_modif)
+        self.bmi_loss = self.BMI_loss(x_a, x_a_modif)
 
         self.loss_gen = self.config['w']['recon']*self.loss_recon + \
             self.config['w']['class']*self.loss_class + \
