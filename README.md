@@ -11,13 +11,9 @@ Official implementation for paper [High Resolution Face Age Editing](https://arx
 
 ## Load and test pretrained network 
 
-1. You can download the working notebook where everything is set up.
+1. You can download the working notebook `dl_final.ipynb  where everything is set up.
 
 2. Upload test images in the folder `/test/input` and run all cells then it will test after training. The output images will be saved in the folder `/test/output`. You can change the desired target age with `--target_age`.
-3. 
-```
-!python /content/test.py --config 001 --target_age 85
-```
 
 ## License
 
