@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as data
+import torchvision.transforms as T
 from PIL import Image
 from torch.autograd import grad
 
@@ -12,9 +13,14 @@ from torch.autograd import grad
 def clip_img(x):
     """Clip image to range(0,1)"""
     img_tmp = x.clone()[0]
-    img_tmp[0] += 0.485
-    img_tmp[1] += 0.457
-    img_tmp[2] += 0.407
+    denormalize = T.Normalize(
+        mean=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
+        std=[1 / 0.229, 1 / 0.224, 1 / 0.225]
+    )
+    img_tmp = denormalize(img_tmp)
+    # img_tmp[0] += 0.485
+    # img_tmp[1] += 0.457
+    # img_tmp[2] += 0.407
     img_tmp = torch.clamp(img_tmp, 0, 1)
     return img_tmp
 
