@@ -10,12 +10,12 @@ import torch.utils.data as data
 import yaml
 from PIL import Image
 from torchvision import transforms, utils
+from torchvision.transforms import v2
 
 from datasets import *
 from functions import *
 from nets import *
 from trainer import *
-from torchvision.transforms import v2
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.deterministic = True
